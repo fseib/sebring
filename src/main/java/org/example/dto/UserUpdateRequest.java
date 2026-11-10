@@ -2,7 +2,6 @@ package org.example.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-// No id/email/registrationDate/active fields here: those can't be changed via update.
 public class UserUpdateRequest {
 
     @NotBlank(message = "firstName is required")

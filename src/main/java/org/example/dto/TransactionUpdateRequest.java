@@ -2,7 +2,6 @@ package org.example.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-// No userId/vehicleId/transactionType/totalAmount/createdAt here: those can't change after creation.
 public class TransactionUpdateRequest {
 
     @NotBlank(message = "status is required")

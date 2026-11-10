@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import org.example.model.enums.FuelType;
 import org.example.model.enums.Transmission;
@@ -51,7 +50,7 @@ public class Vehicle {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
