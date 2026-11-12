@@ -1,30 +1,43 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../hooks/useAuth.js'
 import { FavoritesContext } from './FavoritesContext.js'
 
-const STORAGE_KEY = 'sebring:favorites'
+// Cada usuario tiene su propia lista; sin sesión se usa la del visitante
+const storageKey = (userId) => `sebring:favorites:${userId ?? 'guest'}`
 
-function readStored() {
+function readStored(key) {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? []
+    return JSON.parse(localStorage.getItem(key)) ?? []
   } catch {
     return []
   }
 }
 
-// Favoritos del visitante, guardados en el navegador
+// Favoritos guardados en el navegador, separados por usuario
 export function FavoritesProvider({ children }) {
-  const [ids, setIds] = useState(readStored)
+  const { user } = useAuth()
+  const key = storageKey(user?.id)
+  const [state, setState] = useState(() => ({ key, ids: readStored(key) }))
+
+  // Al iniciar o cerrar sesión, carga la lista del nuevo usuario
+  if (state.key !== key) {
+    setState({ key, ids: readStored(key) })
+  }
+  const { ids } = state
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
+      localStorage.setItem(state.key, JSON.stringify(state.ids))
     } catch {
       // Sin acceso a localStorage (modo privado): los favoritos solo duran la sesión
     }
-  }, [ids])
+  }, [state])
 
   const toggleFavorite = useCallback((id) => {
-    setIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+    setState((prev) => ({
+      ...prev,
+      ids: prev.ids.includes(id) ? prev.ids.filter((x) => x !== id) : [...prev.ids, id],
+    }))
   }, [])
 
   const isFavorite = useCallback((id) => ids.includes(id), [ids])

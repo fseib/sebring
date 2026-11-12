@@ -1,8 +1,11 @@
-import { ArrowLeft, ArrowRight, BadgeCheck, CircleCheckBig, LockKeyhole } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BadgeCheck, CircleCheckBig, LockKeyhole, LogIn } from 'lucide-react'
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { DEPOSIT_ARS, RESERVATION_HOURS } from '../../constants/catalog.js'
+import { useAuth } from '../../hooks/useAuth.js'
 import { isEmail, required, useForm } from '../../hooks/useForm.js'
+import { useReservations } from '../../hooks/useReservations.js'
 import { useVehicles } from '../../hooks/useVehicles.js'
 import { formatNumber } from '../../utils/format.js'
 import { canBeReserved, getFinalPrice, getVehicleTitle } from '../../utils/vehicle.js'
@@ -80,10 +83,23 @@ const FooterLeft = styled.div`
   margin-right: auto;
 `
 
-// Flujo de reserva online en 3 pasos. Al confirmar, la unidad pasa a "reservado".
+// Flujo de reserva online en 3 pasos. Al confirmar, la unidad pasa a "reservado"
+// y la reserva queda en el historial del usuario ("Mis reservas"). Requiere sesión.
 function ReservationModal({ vehicle, onClose }) {
-  const { saveVehicle } = useVehicles()
-  const form = useForm(initialValues, rules)
+  const { reserveVehicle } = useVehicles()
+  const { addReservation } = useReservations()
+  const { user } = useAuth()
+  const location = useLocation()
+  // Precarga los datos del comprador con el perfil del usuario
+  const [prefilled] = useState(() => ({
+    ...initialValues,
+    fullName: user?.name ?? '',
+    document: user?.document ?? '',
+    email: user?.email ?? '',
+    city: user?.city ?? '',
+    phone: user?.phone ?? '',
+  }))
+  const form = useForm(prefilled, rules)
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState(null)
@@ -99,11 +115,17 @@ function ReservationModal({ vehicle, onClose }) {
     setSubmitError(null)
     try {
       const reservedUntil = new Date(Date.now() + RESERVATION_HOURS * 3_600_000).toISOString()
-      await saveVehicle({ ...vehicle, status: 'reservado', reservedUntil })
-      setConfirmation({
-        code: `RS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+      await reserveVehicle(vehicle, reservedUntil)
+      const code = `RS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+      addReservation({
+        code,
+        vehicleId: vehicle.id,
+        vehicleTitle: title,
         reservedUntil,
+        delivery: form.values.delivery,
+        deposit: DEPOSIT_ARS,
       })
+      setConfirmation({ code, reservedUntil })
     } catch (error) {
       setSubmitError(error.message)
     } finally {
@@ -115,6 +137,24 @@ function ReservationModal({ vehicle, onClose }) {
     if (!form.validate(STEP_FIELDS[step])) return
     if (isLastStep) confirmReservation()
     else setStep((s) => s + 1)
+  }
+
+  if (!user) {
+    return (
+      <Modal open onClose={onClose} title="Ingresá para reservar" subtitle={title} icon={LockKeyhole} size="sm">
+        <EmptyState
+          icon={LogIn}
+          title="Necesitás una cuenta para señar"
+          action={
+            <Button to="/login" state={{ from: location.pathname + location.search }} icon={LogIn}>
+              Ingresar
+            </Button>
+          }
+        >
+          Así podés seguir el estado de tu reserva desde "Mis reservas".
+        </EmptyState>
+      </Modal>
+    )
   }
 
   if (!wasReservable) {

@@ -1,8 +1,10 @@
-import { Menu, Store, UserRound, X } from 'lucide-react'
+import { LogIn, Menu, Store, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
-import { Container, IconButton, Logo } from '../ui'
+import { useAuth } from '../../hooks/useAuth.js'
+import { Button, Container, IconButton, Logo } from '../ui'
+import UserMenu from './UserMenu.jsx'
 
 const Bar = styled.header`
   position: sticky;
@@ -114,6 +116,7 @@ const sectionLinks = [
 function Header() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
+  const { user, isAdmin } = useAuth()
   const [lastPath, setLastPath] = useState(pathname)
 
   // Cierra el menú mobile al navegar
@@ -139,11 +142,19 @@ function Header() {
           ))}
         </Nav>
         <Actions>
-          <PanelLink to="/admin">
-            <Store size={16} aria-hidden />
-            Panel Concesionario
-          </PanelLink>
-          <IconButton icon={UserRound} label="Mi cuenta / Panel" to="/admin" variant="dark" size={40} round />
+          {isAdmin && (
+            <PanelLink to="/admin">
+              <Store size={16} aria-hidden />
+              Panel Concesionario
+            </PanelLink>
+          )}
+          {user ? (
+            <UserMenu />
+          ) : (
+            <Button to="/login" icon={LogIn} size="sm" variant="dark">
+              Ingresar
+            </Button>
+          )}
           <MenuToggle>
             <IconButton
               icon={open ? X : Menu}

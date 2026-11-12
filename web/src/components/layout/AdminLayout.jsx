@@ -1,7 +1,8 @@
-import { Bell, CarFront, ChartSpline, LockKeyhole, Store, Tag, UserRound } from 'lucide-react'
+import { Bell, CarFront, ChartSpline, LockKeyhole, Store, Tag } from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import styled from 'styled-components'
 import { Badge, IconButton, Logo } from '../ui'
+import UserMenu from './UserMenu.jsx'
 
 const Shell = styled.div`
   display: grid;
@@ -109,6 +110,7 @@ const Topbar = styled.header`
 
 const TopActions = styled.div`
   display: flex;
+  align-items: center;
   gap: 10px;
 `
 
@@ -156,7 +158,7 @@ function AdminLayout() {
           </Badge>
           <TopActions>
             <IconButton icon={Bell} label="Notificaciones" variant="soft" size={40} />
-            <IconButton icon={UserRound} label="Mi cuenta" variant="dark" size={40} round />
+            <UserMenu />
           </TopActions>
         </Topbar>
         <Main>

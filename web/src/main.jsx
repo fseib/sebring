@@ -3,7 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import App from './App.jsx'
+import { AuthProvider } from './context/AuthProvider.jsx'
 import { FavoritesProvider } from './context/FavoritesProvider.jsx'
+import { ReservationsProvider } from './context/ReservationsProvider.jsx'
 import { ToastProvider } from './context/ToastProvider.jsx'
 import { VehiclesProvider } from './context/VehiclesProvider.jsx'
 import GlobalStyle from './styles/GlobalStyle.js'
@@ -14,13 +16,17 @@ createRoot(document.getElementById('root')).render(
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <BrowserRouter>
-        <ToastProvider>
-          <VehiclesProvider>
-            <FavoritesProvider>
-              <App />
-            </FavoritesProvider>
-          </VehiclesProvider>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <VehiclesProvider>
+              <FavoritesProvider>
+                <ReservationsProvider>
+                  <App />
+                </ReservationsProvider>
+              </FavoritesProvider>
+            </VehiclesProvider>
+          </ToastProvider>
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   </StrictMode>,

@@ -1,6 +1,7 @@
 import { Clock, Headphones, MapPin, Phone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
+import { useAuth } from '../../hooks/useAuth.js'
 import { Container, Logo } from '../ui'
 
 const Wrapper = styled.footer`
@@ -100,7 +101,6 @@ const columns = [
     links: [
       { label: 'Vehículos 0km', to: '/catalogo?condicion=okm' },
       { label: 'Usados Seleccionados', to: '/catalogo?condicion=usado' },
-      { label: 'Vendé tu auto', to: '/#vender' },
       { label: 'Simulador de Cuotas', to: '/#financiamiento' },
     ],
   },
@@ -110,12 +110,19 @@ const columns = [
       { label: 'Garantía de 12 Meses', to: '/#garantias' },
       { label: 'Inspección de 180 Puntos', to: '/#garantias' },
       { label: 'Política de Devolución de 7 Días', to: '/#garantias' },
-      { label: 'Panel Concesionario', to: '/admin' },
     ],
   },
 ]
 
+// Link al panel solo visible para administradores
+const adminLink = { label: 'Panel Concesionario', to: '/admin' }
+
 function Footer() {
+  const { isAdmin } = useAuth()
+  const visibleColumns = columns.map((column, index) =>
+    isAdmin && index === columns.length - 1 ? { ...column, links: [...column.links, adminLink] } : column,
+  )
+
   return (
     <Wrapper>
       <Container>
@@ -127,7 +134,7 @@ function Footer() {
               certificados con peritaje mecánico.
             </p>
           </About>
-          {columns.map((column) => (
+          {visibleColumns.map((column) => (
             <Column key={column.title} aria-labelledby={`footer-${column.title}`}>
               <h2 id={`footer-${column.title}`}>{column.title}</h2>
               <ul>
