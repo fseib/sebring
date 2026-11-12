@@ -53,9 +53,7 @@ function CtaBanner() {
             <Button to="/catalogo" size="lg" iconRight={ArrowRight}>
               Ver Catálogo Completo
             </Button>
-            <Button to="/#vender" size="lg" variant="outlineLight">
-              Vender mi Auto
-            </Button>
+
           </Actions>
         </Banner>
       </Container>

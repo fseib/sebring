@@ -7,6 +7,7 @@ import InventoryTable from '../../components/admin/InventoryTable.jsx'
 import InventoryToolbar from '../../components/admin/InventoryToolbar.jsx'
 import VehicleFormModal from '../../components/admin/VehicleFormModal.jsx'
 import { Alert, EmptyState, Pagination, TableFooter, TableWrapper, VisuallyHidden } from '../../components/ui'
+import { useToast } from '../../hooks/useToast.js'
 import { useVehicles } from '../../hooks/useVehicles.js'
 import { paginate } from '../../utils/catalog.js'
 import { downloadCsv } from '../../utils/csv.js'
@@ -39,6 +40,7 @@ const CSV_COLUMNS = [
 
 function InventoryPage() {
   const { vehicles, source, saveVehicle, removeVehicle } = useVehicles()
+  const { showToast } = useToast()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('todos')
   const [page, setPage] = useState(1)
@@ -60,9 +62,22 @@ function InventoryPage() {
     label: `${f.label} (${vehicles.filter(f.match).length})`,
   }))
 
+  const handleSave = async (vehicle) => {
+    const isNew = !vehicle.id
+    await saveVehicle(vehicle)
+    showToast({
+      title: isNew ? 'Unidad publicada' : 'Cambios guardados',
+      message: `${getVehicleTitle(vehicle)}${isNew ? ' se agregó al catálogo.' : ' se actualizó correctamente.'}`,
+    })
+  }
+
   const handleDelete = async (vehicle) => {
     await removeVehicle(vehicle.id)
     setDeleting(null)
+    showToast({
+      title: 'Unidad eliminada',
+      message: `${getVehicleTitle(vehicle)} (Stock #${vehicle.stockCode}) se retiró del inventario.`,
+    })
   }
 
   const askDelete = (vehicle) => {
@@ -131,7 +146,7 @@ function InventoryPage() {
           vehicle={editing.vehicle}
           vehicles={vehicles}
           onClose={() => setEditing(null)}
-          onSave={saveVehicle}
+          onSave={handleSave}
         />
       )}
     </>

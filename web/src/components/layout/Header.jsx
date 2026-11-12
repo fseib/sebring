@@ -109,7 +109,6 @@ const links = [
 // Secciones dentro de la home (anclas)
 const sectionLinks = [
   { to: '/#financiamiento', label: 'Financiamiento' },
-  { to: '/#vender', label: 'Vender mi Auto' },
 ]
 
 function Header() {
